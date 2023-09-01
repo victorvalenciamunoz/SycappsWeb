@@ -1,0 +1,57 @@
+﻿@using SycappsWeb.Client.Services;
+@using SycappsWeb.Shared.Models.Un2Trek;
+
+@inject IAuthService authService;
+@inject NavigationManager NavigationManager;
+
+<div class="pt-5 px-2">
+    <h1 class="h2">Por favor, identifícate</h1>
+
+    <EditForm Model="login" OnValidSubmit="HandleSubmit" class="row">
+        <div class="mb-3 form-floating">
+            <InputText id="email" @bind-Value="login.Email" class="form-control" placeholder="Email"></InputText>
+            <label for="email" class="form-label">Email</label>
+        </div>
+        <div class="mb-3 form-floating">
+            <InputText type="password" id="pass" @bind-Value="login.Password" placeholder="Password" class="form-control"></InputText>
+            <label for="pass" class="form-label">Password</label>
+        </div>
+        <div class="d-flex mt-1 justify-content-end flex-wrap">
+            <button class="btn btn-primary" type="submit">Acceder</button>
+        </div>
+    </EditForm>
+    @if (showAlert)
+    {
+        <div class="alert alert-warning alert-dismissible fade show mt-3">
+            Las credenciales proporcionadas no son válidas
+            <button type="button" class="btn-close" @onclick="HideAlert" data-bs-dismiss="alert"></button>
+        </div>
+    }
+</div>
+<Spinning Show="@isBusy"></Spinning>
+
+@code {
+    private LoginRequest login = new();
+    bool showAlert = false;
+    bool isBusy = false;
+
+    private async void HandleSubmit()
+    {
+        isBusy = true;
+        var isValidUser = await authService.Login(login);
+        if (isValidUser)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            isBusy = false;
+            showAlert = true;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    private void HideAlert()
+    {
+        showAlert = false;
+    }
+}

@@ -1,0 +1,204 @@
+﻿@page "/trekiList/{ActivityId:int}"
+
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using SycappsWeb.Client.Services.Un2Trek;
+@using SycappsWeb.Shared.Models.Un2Trek;
+
+@inject IActividadService activityService;
+
+<div class="p-3">
+    <label>@activity.Titulo</label>
+    <div class="row">
+        <div class="col-6">
+            @if (activityTrekiList.Any())
+            {
+                <label>Trekis usados en la actividad</label>
+                <div class="table-responsive">
+                    <QuickGrid Items="@FilteredAssignedTrekiList" Pagination="@paginationAssigned"
+                               class="table table-striped table-bordered table-sm table-sycapps">
+                        <PropertyColumn Property="c => c.Title" Title="Título" Sortable="true">
+                            <ColumnOptions>
+                                <div class="search-box">
+                                    <input type="search" autofocus @bind="titleAssignedFilter" @bind:event="oninput" placeholder="Título ...." />
+                                </div>
+                            </ColumnOptions>
+                        </PropertyColumn>
+                        <TemplateColumn>
+                            <button class="btn btn-primary" @onclick="(() => ShowInMap(context))">Mapa</button>
+                            <button class="btn btn-warning" @onclick="(() => RemoveTreki(context.Id))">Quitar</button>
+                        </TemplateColumn>
+                    </QuickGrid>
+                    <Paginator Value="@paginationAssigned" />
+                </div>
+            }
+            else
+            {
+                <label>No hay trekis en la actividad</label>
+            }
+        </div>
+        <div class="col-6">
+            @if (unassignedTrekiList.Any())
+            {
+                <label>Trekis sin asignar</label>
+                <div class="table-responsive">
+                    <QuickGrid Items="@FilteredUnassignedTrekiList" Pagination="@paginationUnassigned"
+                                      class="table table-striped table-bordered table-sm table-sycapps">
+                        <PropertyColumn Property="c => c.Title" Title="Título" Sortable="true">
+                            <ColumnOptions>
+                                <div class="search-box">
+                                    <input type="search" autofocus @bind="titleUnassignedFilter" @bind:event="oninput" placeholder="Título ...." />
+                                </div>
+                            </ColumnOptions>
+                        </PropertyColumn>
+                        <TemplateColumn>
+                            <button class="btn btn-primary" @onclick="(() => ShowInMap(context))">Mapa</button>
+                            <button class="btn btn-success" @onclick="(() => AddTreki(context.Id))">Añadir</button>
+                        </TemplateColumn>
+                    </QuickGrid>
+                    <Paginator Value="@paginationUnassigned" />
+                </div>                
+            }
+            else
+            {
+                <label>No hay trekis pendientes de asignar a la actividad</label>
+            }
+        </div>
+    </div>
+</div>
+
+
+@if (selectedTreki != null && selectedTreki.Any())
+{
+    <SfMaps>
+        <MapsCenterPosition Latitude="@selectedTreki[0].Latitude" Longitude="@selectedTreki[0].Longitude" />
+        <MapsZoomSettings Enable="true" ZoomFactor="17">
+            <MapsZoomToolbarSettings>
+                <MapsZoomToolbarButton ToolbarItems="new List<ToolbarItem>() { ToolbarItem.Zoom, ToolbarItem.ZoomIn, ToolbarItem.ZoomOut,
+            ToolbarItem.Pan, ToolbarItem.Reset }"></MapsZoomToolbarButton>
+            </MapsZoomToolbarSettings>
+        </MapsZoomSettings>
+        <MapsLayers>
+            <MapsLayer UrlTemplate="https://tile.openstreetmap.org/level/tileX/tileY.png" TValue="string">
+                <MapsMarkerSettings>
+                    <MapsMarker Visible="true" Height="25" Width="25" DataSource="@selectedTreki" TValue="TrekiResponse"></MapsMarker>
+                </MapsMarkerSettings>
+            </MapsLayer>
+        </MapsLayers>
+    </SfMaps>
+}
+<Spinning Show="@isBusy"></Spinning>
+@code {
+    PaginationState paginationUnassigned = new PaginationState { ItemsPerPage = 10 };
+    PaginationState paginationAssigned = new PaginationState { ItemsPerPage = 10 };
+
+    ActividadResponse activity = new();
+    List<TrekiResponse> activityTrekiList = new();
+    List<TrekiResponse> unassignedTrekiList = new();
+    IQueryable<TrekiResponse> FilteredUnassignedTrekiList
+    {
+        get
+        {
+            var result = unassignedTrekiList.AsQueryable();
+            if (!string.IsNullOrEmpty(titleUnassignedFilter))
+            {
+                result = result.Where(c => c.Title.Contains(titleUnassignedFilter, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            return result;
+        }
+    }
+    IQueryable<TrekiResponse> FilteredAssignedTrekiList
+    {
+        get
+        {
+            var result = activityTrekiList.AsQueryable();
+            if (!string.IsNullOrEmpty(titleAssignedFilter))
+            {
+                result = result.Where(c => c.Title.Contains(titleAssignedFilter, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            return result;
+        }
+    }
+
+    List<TrekiResponse> selectedTreki = new();
+
+    private bool isBusy = false;
+    private string titleUnassignedFilter = string.Empty;
+    private string titleAssignedFilter = string.Empty;
+
+    [Parameter]
+    public int? ActivityId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (ActivityId.HasValue)
+        {
+            await LoadActivity(ActivityId.Value);
+            await LoadActivityTrekiList(ActivityId.Value);
+            await LoadUnassignedTrekiList(ActivityId.Value);
+        }
+    }
+
+    private async Task LoadActivity(int activityId)
+    {
+        isBusy = true;
+        activity = await activityService.Get(activityId);
+    }
+    private async Task LoadActivityTrekiList(int activityId)
+    {
+        isBusy = true;
+        activityTrekiList = new();
+        var result = await activityService.GetActivityTrekiList(activityId);
+        if (result != null && result.Any())
+        {
+            activityTrekiList = result.ToList();
+        }
+        isBusy = false;
+    }
+    private async Task LoadUnassignedTrekiList(int activityId)
+    {
+        isBusy = true;
+        unassignedTrekiList = new();
+        var result = await activityService.GetUnassignedTrekiList(activityId);
+        if (result != null && result.Any())
+        {
+            unassignedTrekiList = result.ToList();
+        }
+        isBusy = false;
+    }
+    private async Task AddTreki(int trekiId)
+    {
+        isBusy = true;
+
+        ResetMap();
+
+        await activityService.AssignTrekiToActivity(ActivityId.Value, trekiId);
+        await LoadActivityTrekiList(ActivityId.Value);
+        await LoadUnassignedTrekiList(ActivityId.Value);
+
+        isBusy = false;
+    }
+
+    private async Task RemoveTreki(int trekiId)
+    {
+        isBusy = true;
+
+        ResetMap();
+
+        await activityService.RemoveTrekiFromActivity(ActivityId.Value, trekiId);
+        await LoadActivityTrekiList(ActivityId.Value);
+        await LoadUnassignedTrekiList(ActivityId.Value);
+
+        isBusy = false;
+    }
+    private void ShowInMap(TrekiResponse treki)
+    {
+        ResetMap();
+        selectedTreki.Add(treki);
+    }
+    private void ResetMap()
+    {
+        selectedTreki.Clear();
+    }
+}

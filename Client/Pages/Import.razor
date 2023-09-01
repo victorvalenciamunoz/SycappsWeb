@@ -1,0 +1,57 @@
+﻿@page "/import"
+@attribute [Authorize(Roles = "Administrator")]
+
+@inject IPoiService poiService;
+
+@using Microsoft.AspNetCore.Authorization;
+@using SycappsWeb.Client.Services;
+@using SycappsWeb.Client.Shared.ImportW;
+@using SycappsWeb.Shared.Entities;
+<AuthorizeView>
+    <PageTitle>Import</PageTitle>
+
+    <ImportWizard TValue="PuntodeInteres"
+                  ImportCompleted="@((e)=> ImportacionTerminada((List<PuntodeInteres>)e))"
+                  ExceptionRaised="@((args)=> ShowException(args))"></ImportWizard>
+    <Spinning Show="@isBusy"></Spinning>
+
+    @if (showException)
+    {
+        <div class="row">
+            <div class="col-sm-6 offset-2">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    En la fila @rowIndex, propiedad @propertyName se ha producido esta incidencia:<br />@message
+                    <button type="button" @onclick="HideException" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    }
+</AuthorizeView>
+@code {
+    private bool isBusy = false;
+    private bool showException = false;
+    private int rowIndex = 0;
+    private string propertyName = string.Empty;
+    private string message = string.Empty;
+
+    private async Task ImportacionTerminada(List<PuntodeInteres> data)
+    {
+        if (data is not null)
+        {
+            isBusy = true;
+            await poiService.Import(data);
+            isBusy = false;
+        }
+    }
+    private void ShowException(ImportExceptionEventArgs args)
+    {
+        showException = true;
+        rowIndex = args.RowIndex;
+        message = args.Message;
+        propertyName = args.PropertyName;
+    }
+    private void HideException()
+    {
+        showException = false;
+    }
+}

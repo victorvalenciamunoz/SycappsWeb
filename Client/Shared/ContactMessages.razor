@@ -1,0 +1,190 @@
+﻿@attribute [Authorize(Roles = "Administrator")]
+@page "/messagelist"
+
+@using SycappsWeb.Client.Services;
+@using SycappsWeb.Shared.Entities;
+
+@inject IContactMessageService contactService;
+<div class="p-3">
+    @if (messages.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-sm table-sycapps">
+                <thead>
+                    <tr>
+                        <th>
+                            De
+                        </th>
+                        <th>
+                            Email
+                        </th>
+                        <th>
+                            Fecha
+                        </th>
+                        <th>
+                            Mensaje
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var message in messages)
+                    {
+                        <tr>
+                            <td>
+                                @message.Nombre
+                            </td>
+                            <td>
+                                @message.Email
+                            </td>
+                            <td>
+                                @message.FechaRecepcion
+                            </td>
+                            <td>
+                                @message.Mensaje
+                            </td>
+                            <td>
+                                <button class="btn btn-primary" @onclick="((e) =>ShowMessageDetail(message.Id))">Ver</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-end">
+                <li class="page-item">
+                    <button type="button" class="page-link" @onclick="GotoPreviousPage" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </button>
+                </li>
+                @for (int pageIndex = 1; pageIndex <= totalPages; pageIndex++)
+                {
+                    int index = pageIndex;
+                    <li class="page-item">
+                        <button type="button" class="page-link" @onclick="() => GotoPage(index)">@index</button>
+                    </li>
+                }
+                <li class="page-item">
+                    <button type="button" class="page-link" @onclick="GotoNextPage" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    }
+    @if (showDetail && selectedMessage != null)
+    {
+        <div class="modal" tabindex="-1" style="display:block;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Mensaje de @selectedMessage.Nombre</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="HideDetails"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="recipient-name" class="col-form-label">Nombre:</label>
+                                <input type="text" class="form-control" id="recipient-name" value="@selectedMessage.Nombre">
+                            </div>
+                            <div class="mb-3">
+                                <label for="recipient-name" class="col-form-label">Email:</label>
+                                <input type="text" class="form-control" id="recipient-name" value="@selectedMessage.Email">
+                            </div>
+                            <div class="mb-3">
+                                <label for="recipient-name" class="col-form-label">Fecha envío:</label>
+                                <input type="text" class="form-control" id="recipient-name" value="@selectedMessage.FechaRecepcion">
+                            </div>
+                            <div class="mb-3">
+                                <label for="message-text" class="col-form-label">Mensaje:</label>
+                                <textarea class="form-control" id="message-text" value="@selectedMessage.Mensaje"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="HideDetails">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+@code {
+    IEnumerable<MensajeContacto> messages = Enumerable.Empty<MensajeContacto>();
+    private bool isBusy = false;
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalRecords = 0;
+    private bool showDetail = false;
+    private MensajeContacto selectedMessage;
+
+    public int totalPages
+    {
+        get
+        {
+            if (totalRecords <= pageSize)
+                return 1;
+
+            return Convert.ToInt32(Math.Ceiling(Convert.ToDouble(totalRecords) / Convert.ToDouble(pageSize)));
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (isBusy)
+            return;
+
+        await LoadUnread();
+    }
+
+    private async Task GotoPreviousPage()
+    {
+        if (currentPage == 1) return;
+
+        await GotoPage(currentPage - 1);
+    }
+
+    private async Task GotoNextPage()
+    {
+        if (currentPage == totalPages) return;
+        await GotoPage(currentPage + 1);
+    }
+
+    private async Task GotoPage(int pageNumber)
+    {
+        currentPage = pageNumber;
+        await LoadUnread();
+    }
+
+    private async Task LoadUnread()
+    {
+        isBusy = true;
+        var result = await contactService.GetUnread(currentPage, pageSize);
+        if (result != null && result.Data.Any())
+        {
+            messages = result.Data;
+            totalRecords = result.TotalRecords;
+        }
+        isBusy = false;
+    }
+
+    private async Task ShowMessageDetail(int id)
+    {
+        if (isBusy) return;
+
+        selectedMessage = messages.Where(c => c.Id == id).FirstOrDefault();
+        if (selectedMessage is not null)
+        {
+            isBusy = true;
+            await contactService.MarkAsRead(id);
+            showDetail = true;
+        }
+    }
+
+    private async Task HideDetails()
+    {
+        showDetail = false;
+        await LoadUnread();
+    }
+}

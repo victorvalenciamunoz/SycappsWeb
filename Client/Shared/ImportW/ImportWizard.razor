@@ -1,0 +1,94 @@
+﻿@using System.Data
+@typeparam TValue
+
+@{
+    var rowsToSkip = 0;
+    if (firstRowHeaders)
+    {
+        rowsToSkip = 1;
+    }
+    else
+    {
+        rowsToSkip = 0;
+    }
+}
+@if (previewData is null || previewData.Rows.Count == 0)
+{
+    <SfUploader ID="UploadFiles" AutoUpload="false">
+        <UploaderEvents ValueChange="OnChange"></UploaderEvents>
+    </SfUploader>
+}
+else
+{
+    @if (entityProperties != null && entityProperties.Any())
+    {
+        <select @onchange="MappingChanged">
+            @if (string.IsNullOrWhiteSpace(selectedProperty))
+            {
+                <option value="" selected>(Seleccione)</option>
+            }
+            else
+            {
+                <option value="">(Seleccione)</option>
+            }
+
+            @foreach (var item in entityProperties)
+            {
+                if (item.Value == selectedProperty)
+                {
+                    <option value="@item.Value" selected>@item.Key</option>
+                }
+                else
+                {
+                    <option value="@item.Value">@item.Key</option>
+                }
+            }
+        </select>
+    }
+    <br />
+    <input type="checkbox" id="firstRow" @bind="@firstRowHeaders" />
+    <label for="firstRow">Primera fila tiene nombres de columnas</label>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered table-sm table-sycapps">
+            <thead>
+                @foreach (System.Data.DataRow dr in previewData.AsEnumerable().Take(1))
+                {
+                    int columnIndex = 0;
+                    <tr>
+                        @foreach (System.Data.DataColumn column in previewData.Columns)
+                        {
+                            int index = columnIndex;
+                            <th @onclick="@(e=>SelectedColumn(index))" class="@(index == columnIndexSelected?"selectedColumn":"")">
+                                @dr[column]
+                            </th>
+                            columnIndex += 1;
+                        }
+                    </tr>
+                }
+            </thead>
+            <tbody>
+                @foreach (System.Data.DataRow dr in previewData.AsEnumerable().Skip(@rowsToSkip))
+                {
+                    int columnIndex = 0;
+                    <tr>
+                        @foreach (System.Data.DataColumn column in previewData.Columns)
+                        {
+                            int index = columnIndex;
+                            <td class="@(index == columnIndexSelected?"selectedColumn":"")">
+                                @dr[column]
+                            </td>
+                            columnIndex += 1;
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <input type="button" @onclick="Import" value="Importar" />
+}
+<style>
+    .selectedColumn {
+        background-color: darkgray !important;
+    }
+</style>

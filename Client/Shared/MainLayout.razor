@@ -1,0 +1,31 @@
+﻿@inherits LayoutComponentBase
+
+<PageTitle>Sycapps</PageTitle>
+<div class="container-fluid">
+    <div class="page">
+        <AuthorizeView>
+            <Authorized>
+                <div class="sidebar">
+                    <NavMenu />
+                </div>
+            </Authorized>
+           @* <NotAuthorized>
+                <div class="row">
+                    <div class="container-xxl">
+                        <div class="anonymousSidebar">
+                            <AnonymousNavMenu />
+                        </div>
+                    </div>
+                </div>
+            </NotAuthorized>*@
+        </AuthorizeView>
+        <main style="display: flex; flex-flow: column; height: 100vh;">
+            <div style="height: 50px;">
+                <TopMenu></TopMenu>
+            </div>
+            <article class="content p-0 d-flex flex-grow-1 flex-column">
+                @Body
+            </article>
+        </main>
+    </div>
+</div>

@@ -1,0 +1,73 @@
+﻿@page "/contactform"
+
+@using SycappsWeb.Client.Services;
+@using SycappsWeb.Shared.Models;
+
+@inject IContactMessageService messageService;
+
+<div class="p-3">
+    <h3>Contacta con nosotros</h3>
+
+    <div class="row mb-3">
+        <div class="col">
+            <p>
+                ¿Necesitas ponerte en contacto con nosotros? Si eres usuario de nuestra aplicación y tienes una incidencia o quieres una consulta,
+                puedes rellenar nuestro formulario online para enviar un mensaje a nuestro equipo de atención al cliente.
+            </p>
+            <p>Trataremos de responder a tu mensaje en un plazo de 2 días laborales</p>
+        </div>
+    </div>
+
+    <EditForm Model="@model" class="row" OnValidSubmit="Insert">
+        <DataAnnotationsValidator />
+        <div class="mb-3 form-floating col-xl-6 col-md-12">
+            <InputText class="form-control" id="nombre" placeholder="Nombre" @bind-Value="model.Nombre" aria-label="Nombre" />
+            <label for="nombre" class="form-label">Nombre</label>
+            <ValidationMessage For="@(()=> model.Nombre)"></ValidationMessage>
+        </div>
+        <div class="mb-3 form-floating col-xl-6 col-md-12">
+            <InputText class="form-control" id="email" placeholder="E-mail" @bind-Value="model.Email" aria-label="E-mail" />
+            <label for="email" class="form-label">Email</label>
+            <ValidationMessage For="@(()=> model.Email)"></ValidationMessage>
+        </div>
+        <div class="mb-3 form-floating col-12">
+            <InputTextArea class="form-control" id="mensaje" placeholder="Mensaje" @bind-Value="model.Mensaje" aria-label="Mensaje"></InputTextArea>
+            <ValidationMessage For="@(()=> model.Mensaje)"></ValidationMessage>
+            <label for="mensaje" class="form-label">Mensaje</label>
+        </div>
+        <div class="d-flex mt-1 justify-content-end flex-wrap">
+            <button type="submit" class="btn btn-primary mb-3">Enviar</button>
+        </div>
+
+    </EditForm>
+    @if (showAlert)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            El mensaje se ha enviado correctamente.Gracias por comunicarte con nosotros.
+            <button type="button" class="btn-close" @onclick="HideAlert" data-bs-dismiss="alert"></button>
+        </div>
+    }
+</div>
+<Spinning Show="@isBusy"></Spinning>
+
+@code {
+    private ContactMessageRequest model = new();
+    private bool showAlert = false;
+    bool isBusy = false;
+
+    async Task Insert()
+    {
+        isBusy = true;
+        model.Leido = false;
+        model.FechaRecepcion = DateTime.Now;
+        await messageService.SendMessage(model);
+
+        model = new();
+        showAlert = true;
+        isBusy = false;
+    }
+    void HideAlert()
+    {
+        showAlert = false;
+    }
+}

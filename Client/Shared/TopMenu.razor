@@ -1,0 +1,52 @@
+﻿@using SycappsWeb.Client.Services;
+@inject IAuthService authService;
+@inject NavigationManager NavigationManager;
+
+<nav class="navbar navbar-expand-lg bg-dark-subtle sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="#">Sycapps</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            </ul>
+            <div class="d-flex">
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                @context.User.FindFirst("FullName")?.Value
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="#" @onclick="Logout" class="dropdown-item">
+                                        <span class="oi oi-account-logout me-1" aria-hidden="true"></span>Salir
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item"><a href="/" class="nav-link">Inicio</a></li>
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="access">
+                                    <span>Acceso</span>
+                                </NavLink>                                
+                            </li>
+                        </ul>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </div>
+    </div>
+</nav>
+
+@code {
+    async Task Logout()
+    {
+        await authService.Logout();
+        NavigationManager.NavigateTo("/");
+    }
+}

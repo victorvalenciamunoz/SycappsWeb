@@ -1,0 +1,71 @@
+﻿@*@inject ContactMessageService contactService;*@
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Sycapps</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        <div class="nav-item nav-item-dark px-3">
+            <NavLink class="nav-link" href="contactform">
+                <span class="oi oi-envelope-closed" aria-hidden="true"></span> Contacto
+            </NavLink>
+        </div>
+        <AuthorizeView Roles="Administrator">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="messagelist">
+                    <span class="oi oi-envelope-closed" aria-hidden="true"></span> Ver mensajes
+                    <span class="badge bg-secondary">@totalUnreadMessages</span>
+                </NavLink>
+            </div>
+        </AuthorizeView>
+        <AuthorizeView Roles="Administrator">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="import">
+                        <span class="oi oi-list-rich" aria-hidden="true"></span> Importar POIs
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Roles="Un2TrekAdministrator">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="activitylist">
+                        <span class="oi oi-list-rich" aria-hidden="true"></span> Actividades
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+    </nav>
+</div>
+
+@code {
+
+    private int totalUnreadMessages = 0;
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+    //protected override async Task OnParametersSetAsync()
+    //{
+    //    var unread = await contactService.GetUnread();
+    //    if (unread.Any())
+    //        totalUnreadMessages = unread.Count();
+
+    //}
+}

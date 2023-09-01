@@ -1,0 +1,19 @@
+﻿@if (Show)
+{
+    <div div class="modal fade show" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel"
+         aria-hidden="true" style="display:block;">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-body d-flex align-items-center justify-content-center" style="border:0px">
+                    <lottie-player src="https://assets4.lottiefiles.com/private_files/lf30_eorrtkiv.json"
+                                   background="transparent" speed="1" style="width:300px; height:300px"
+                                   loop autoplay></lottie-player>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public bool Show { get; set; }
+}
