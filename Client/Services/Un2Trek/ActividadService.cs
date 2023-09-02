@@ -32,7 +32,7 @@ public class ActividadService : IActividadService
         {
             return pagedResult;
         }
-        return null;
+        return new PagedResponse<IEnumerable<ActividadResponse>>(data: Enumerable.Empty<ActividadResponse>(), pageNumber: 0, pageSize: 0, totalRecords: 0);
     }
 
     public async Task<IEnumerable<TrekiResponse>> GetActivityTrekiList(int activityId)
@@ -42,7 +42,7 @@ public class ActividadService : IActividadService
         {
             return trekiList;
         }
-        return null;
+        return Enumerable.Empty<TrekiResponse>();
     }
 
     public async Task<IEnumerable<TrekiResponse>> GetUnassignedTrekiList(int activityId)
@@ -52,7 +52,7 @@ public class ActividadService : IActividadService
         {
             return trekiList;
         }
-        return null;
+        return Enumerable.Empty<TrekiResponse>();
 
     }
 

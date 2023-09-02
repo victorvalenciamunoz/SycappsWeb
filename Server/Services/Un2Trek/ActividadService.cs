@@ -81,6 +81,7 @@ public class ActividadService : IActividadService
             actividad!.Titulo = updatedActivity.Titulo;
             actividad!.ValidoDesde = updatedActivity.ValidoDesde;
             actividad!.ValidoHasta = updatedActivity.ValidoHasta;
+            actividad!.Descripcion = updatedActivity.Descripcion;
             await context.SaveChangesAsync();
         }
     }

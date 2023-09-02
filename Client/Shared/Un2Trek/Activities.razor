@@ -89,8 +89,13 @@
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="activity-title" class="col-form-label">Nombre:</label>
-                                <InputText @bind-Value="updatedActivity.Titulo" id="activity-title" class="form-control"></InputText>
+                                <InputText @bind-Value="updatedActivity.Titulo" id="activity-title" class="form-control"></InputText>                                
                                 <ValidationMessage For="@(()=> updatedActivity.Titulo)"></ValidationMessage>
+                            </div>
+                            <div class="mb-3">
+                                <label for="activity-description" class="col-form-label">Descripción:</label>
+                                <InputTextArea @bind-Value="updatedActivity.Descripcion" id="activity-description" rows="4" class="form-control"></InputTextArea>
+                                <ValidationMessage For="@(()=> updatedActivity.Descripcion)"></ValidationMessage>
                             </div>
                             <div class="mb-3">
                                 <label for="activity-from" class="col-form-label">Válida desde:</label>
@@ -184,7 +189,7 @@
         }
         else
         {
-            selectedActivity = new ActividadResponse(0, "Nueva actividad", string.Empty, string.Empty);                        
+            selectedActivity = new ActividadResponse(0, "Nueva actividad", string.Empty, string.Empty, string.Empty);                        
         }
 
         if (selectedActivity is not null)
@@ -192,7 +197,8 @@
             updatedActivity = new ActividadResponse(selectedActivity.Id,
                                                     selectedActivity.Titulo,
                                                     selectedActivity.ValidoDesde,
-                                                    selectedActivity.ValidoHasta);
+                                                    selectedActivity.ValidoHasta,
+                                                    selectedActivity.Descripcion);
         }
         showDetail = true;
     }

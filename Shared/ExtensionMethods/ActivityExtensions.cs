@@ -12,19 +12,21 @@ public static class ActivityExtensions
         {
             validoHasta = Convert.ToDateTime(response.ValidoHasta);
         }
-        return new ActividadRequest(response.Titulo, Convert.ToDateTime(response.ValidoDesde), validoHasta);
+        return new ActividadRequest(response.Titulo, Convert.ToDateTime(response.ValidoDesde), validoHasta, response.Descripcion);
     }
     
     public static ActividadResponse ToResponse(this Actividad actividad)
     {
         string validoHasta = string.Empty;
+        if (actividad == null)
+            return new ActividadResponse();
 
         if (actividad.ValidoHasta.HasValue)
         {
-            validoHasta = actividad.ValidoHasta!.ToString();
+            validoHasta = actividad.ValidoHasta.Value.ToString();
         }
 
-        return new ActividadResponse(actividad.Id, actividad.Titulo, actividad.ValidoDesde.ToString(), validoHasta);
+        return new ActividadResponse(actividad.Id, actividad.Titulo, actividad.ValidoDesde.ToString(), validoHasta!, actividad.Descripcion);
     }
     
     public static Actividad ToEntity(this ActividadRequest request)
@@ -33,7 +35,8 @@ public static class ActivityExtensions
         {
             Titulo = request.Titulo,
             ValidoDesde = request.ValidoDesde,
-            ValidoHasta = request.ValidoHasta
+            ValidoHasta = request.ValidoHasta,
+            Descripcion = request.Descripcion
         };
     }
 }
