@@ -16,16 +16,18 @@ public class TrekiResponse
 }
 public class TrekiRequest
 {
+    public int Id { get; set; }
+
     [Range(-90, 90)]
-    public double Latitud { get; set; }
+    public double Latitude { get; set; }
 
     [Range(-180, 180)]
-    public double Longitud { get; set; }
+    public double Longitude { get; set; }
 
     [Required]
     [StringLength(maximumLength: 50)]
-    public string Titulo { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
 
     [StringLength(maximumLength: 250)]
-    public string Descripcion { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
 }

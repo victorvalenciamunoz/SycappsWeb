@@ -14,7 +14,8 @@ public static class TrekiExtensions
             Latitud = treki.Latitud,
             Longitud = treki.Longitud,
             Titulo = treki.Titulo,
-            Id = treki.Id
+            Id = treki.Id,
+            Activo = treki.Activo
         };
     }
     public static TrekiResponse ToResponse(this TrekiDto treki)
@@ -32,10 +33,11 @@ public static class TrekiExtensions
     {
         return new TrekiDto
         {
-            Descripcion = treki.Descripcion,
-            Latitud = treki.Latitud,
-            Longitud = treki.Longitud,
-            Titulo = treki.Titulo
+            Id = treki.Id,
+            Descripcion = treki.Description,
+            Latitud = treki.Latitude,
+            Longitud = treki.Longitude,
+            Titulo = treki.Title
         };
     }
 

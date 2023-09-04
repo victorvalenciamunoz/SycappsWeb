@@ -18,12 +18,18 @@ public class TrekiRepository : ITrekiRepository
         return context.SaveChangesAsync();
     }
 
+    public async Task<Treki?> GetById(int id)
+    {
+        var treki = await context.Trekis.Where(c => c.Id == id)
+                                       .FirstOrDefaultAsync();
+
+        return treki;
+    }
+
     public async Task<bool> Modify(Treki trekiToModify)
     {
-        var treki = await context.Trekis.Where(c => c.Latitud == trekiToModify.Latitud
-                                                 && c.Longitud == trekiToModify.Longitud)
-                                       .FirstOrDefaultAsync();
-        if (treki != null)
+        var treki = await GetById(trekiToModify.Id);   
+        if (treki!=null)
         {
             treki.Titulo = trekiToModify.Titulo;
             treki.Longitud = trekiToModify.Longitud;
@@ -35,7 +41,7 @@ public class TrekiRepository : ITrekiRepository
 
         return false;
     }
-
+    
     public async Task<List<Treki>> GetTrekisAround(double currentLatitude, double currentLongitude, string threshold)
     {
         return await context.Trekis.FromSqlRaw($"GetTrekisAround {currentLatitude.ToString().Replace(",", ".")}, {currentLongitude.ToString().Replace(",", ".")}, {threshold}").ToListAsync();

@@ -52,7 +52,7 @@ public class Un2TrekTrekiController : ControllerBase
         return Ok(trekisAround);
     }
 
-    [HttpPost]
+    [HttpPost("add")]
     public async Task<ActionResult<TrekiResponse>> Post([FromBody] TrekiRequest treki)
     {
 
@@ -67,6 +67,8 @@ public class Un2TrekTrekiController : ControllerBase
         try
         {
             var trekiToInsert = treki.ToDto();
+            trekiToInsert.Activo = true;
+
             await trekiService.Add(trekiToInsert);
             var trekiResponse = trekiToInsert.ToResponse();
             return Ok(trekiResponse);
@@ -79,7 +81,20 @@ public class Un2TrekTrekiController : ControllerBase
 
     }
 
-    [HttpPut]
+    [HttpDelete("{id}/delete")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await trekiService.Delete(id);
+        if (result.HasErrors)
+        {
+            logger.LogError(result.Errors[0], string.Empty);
+            return BadRequest(result.Errors[0]);
+        }
+
+        return Ok(result.Element);
+    }
+    
+    [HttpPut("{id}/update")]
     public async Task<IActionResult> Put([FromBody] TrekiRequest treki)
     {
         if (!ModelState.IsValid)
@@ -92,10 +107,13 @@ public class Un2TrekTrekiController : ControllerBase
         }
         var result = await trekiService.Modify(treki.ToDto());
 
-        if (result)
-            return Ok();
-        else
-            return BadRequest();
+        if (result.HasErrors)
+        {
+            logger.LogError(result.Errors[0], string.Empty);
+            return BadRequest(result.Errors[0]);
+        }
+
+        return Ok(result.Element);
     }
 
     [HttpPost("capture")]

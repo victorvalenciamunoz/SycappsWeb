@@ -37,7 +37,7 @@ public class AuthenticationController : ControllerBase
                     return Ok(await SetupToken(loginRequest.Email));
                 }
             }
-            return Unauthorized();
+            return Unauthorized(StringConstants.InvalidCredentialsErrorCode);
         }
         catch (Exception ex)
         {

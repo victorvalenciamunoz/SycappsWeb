@@ -13,7 +13,9 @@ public interface ITrekiService
 
     Task<List<TrekiDto>> GetTrekisAround(double currentLatitude, double currentLongitude);
 
-    Task<bool> Modify(TrekiDto trekiToModify);
+    Task<ServiceResultSingleElement<bool>> Modify(TrekiDto trekiToModify);
+
+    Task<ServiceResultSingleElement<bool>> Delete(int id);
 
     Task<List<TrekiDto>> GetTrekiListByActivity(int activityId);
 

@@ -25,16 +25,25 @@ public class TrekiService : ITrekiService
         this.config = configuration;
         this.userManager = userManager;
     }
-
+    
     public Task Add(TrekiDto newTreki)
     {
         var trekiToInsert = newTreki.ToEntity();
         return unitOfWork.TrekiRepository.Add(trekiToInsert);
     }
 
-    public async Task<bool> Modify(TrekiDto trekiToModify)
+    public async Task<ServiceResultSingleElement<bool>> Modify(TrekiDto trekiToModify)
     {
-        return await unitOfWork.TrekiRepository.Modify(trekiToModify.ToEntity());
+        ServiceResultSingleElement<bool> result = new();
+        var treki = await unitOfWork.TrekiRepository.GetById(trekiToModify.Id);
+        if (treki == null)
+        {
+            result.Errors.Add(StringConstants.TrekiNotFoundErrorCode);
+            return result;
+        }
+        result.Element =  await unitOfWork.TrekiRepository.Modify(trekiToModify.ToEntity());
+
+        return result;
     }
 
     public async Task<List<TrekiDto>> GetTrekisAround(double currentLatitude, double currentLongitude)
@@ -78,6 +87,22 @@ public class TrekiService : ITrekiService
             result.Add(puntoDto);
         }
 
+        return result;
+    }
+
+    public async Task<ServiceResultSingleElement<bool>> Delete(int id)
+    {
+        ServiceResultSingleElement<bool> result = new();
+        var treki = await unitOfWork.TrekiRepository.GetById(id);
+        if (treki == null)
+        {
+            result.Errors.Add(StringConstants.TrekiNotFoundErrorCode);
+            return result;
+        }
+        
+        treki.Activo = false;
+        result.Element =  await unitOfWork.TrekiRepository.Modify(treki);
+        
         return result;
     }
 

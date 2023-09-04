@@ -14,4 +14,6 @@ public class TrekiDto
 
     [StringLength(maximumLength: 250)]
     public string Descripcion { get; set; } = string.Empty;
+
+    public bool Activo { get; set; } = true;
 }

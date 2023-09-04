@@ -5,7 +5,7 @@ namespace SycappsWeb.Server.Data;
 public interface ITrekiRepository
 {
     Task Add(Treki newTreki);
-    
+    Task<Treki?> GetById(int id);
     Task<List<Treki>> GetTrekiListByActivity(int activityId);
     
     Task<List<Treki>> GetTrekiListNotInActivity(int activityId);

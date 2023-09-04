@@ -8,7 +8,8 @@ public static class StringConstants
     public static string TrekiNotFoundErrorCode = "T001";
     public static string InvalidDistanceErrorCode = "T002";
     public static string TrekiNotFoundInActivityErrorCode = "T003";
-    public static string TrekiAlreadyCapturedErrorCode = "T003";
+    public static string TrekiAlreadyCapturedErrorCode = "T004";
 
     public static string UserNotFoundErrorCode = "U001";
+    public static string InvalidCredentialsErrorCode = "U002";
 }
