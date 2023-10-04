@@ -36,7 +36,7 @@ public class Un2TrekTrekiController : ControllerBase
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, string.Empty);
+            logger.LogError(ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
             return BadRequest(ex.Message);
         }
 
@@ -60,7 +60,7 @@ public class Un2TrekTrekiController : ControllerBase
         {
             foreach (var modelError in ModelState.Values)
             {
-                logger.LogError(modelError.Errors[0].ErrorMessage, string.Empty);
+                logger.LogError(modelError.Errors[0].ErrorMessage, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
             }
             return BadRequest(StringConstants.RequiredFieldsMissing);
         }
@@ -101,7 +101,7 @@ public class Un2TrekTrekiController : ControllerBase
         {
             foreach (var modelError in ModelState.Values)
             {
-                logger.LogError(modelError.Errors[0].ErrorMessage, string.Empty);
+                logger.LogError(modelError.Errors[0].ErrorMessage, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
             }
             return BadRequest(StringConstants.RequiredFieldsMissing);
         }
@@ -109,7 +109,7 @@ public class Un2TrekTrekiController : ControllerBase
 
         if (result.HasErrors)
         {
-            logger.LogError(result.Errors[0], string.Empty);
+            logger.LogError(result.Errors[0], System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
             return BadRequest(result.Errors[0]);
         }
 
