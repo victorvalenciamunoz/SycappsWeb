@@ -73,7 +73,7 @@ public class AuthenticationController : ControllerBase
     [HttpGet("renew")]
     public async Task<ActionResult<string>> Renew()
     {
-        var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "userName").FirstOrDefault();
+        var emailClaim = HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == "userName");
         if (emailClaim != null)
         {
             return Ok(await SetupToken(emailClaim.Value));
@@ -105,7 +105,7 @@ public class AuthenticationController : ControllerBase
     {
         var userClaims = await userManager.GetClaimsAsync(identityUser);
 
-        var fullNameClaim = userClaims.Where(c => c.Type.Equals("FullName", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+        var fullNameClaim = userClaims.FirstOrDefault(c => c.Type.Equals("FullName", StringComparison.InvariantCultureIgnoreCase));
 
         return fullNameClaim!;
     }
@@ -116,7 +116,7 @@ public class AuthenticationController : ControllerBase
             new Claim("userRoles", string.Join(", ", userRoles).TrimEnd(',',' '))
         };
         claims.Add(new(JwtRegisteredClaimNames.Sub, identityUser.Id));
-        claims.Add(new("userName", identityUser.Email.ToString()));
+        claims.Add(new("userName", identityUser.Email!.ToString()));
 
         if (!string.IsNullOrEmpty(fullUserName))
         {
@@ -124,7 +124,7 @@ public class AuthenticationController : ControllerBase
         }
         var secretKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(config.GetValue<string>("Authentication:SecretKey")!));
         var creds = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-        //var expiration = DateTime.UtcNow.AddMinutes(120);
+        
         var now = DateTime.Now;
         var expiration = now.AddMinutes(180);
         var token = new JwtSecurityToken(

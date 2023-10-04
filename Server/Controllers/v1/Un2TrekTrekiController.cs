@@ -29,7 +29,7 @@ public class Un2TrekTrekiController : ControllerBase
     public async Task<ActionResult<List<TrekiResponse>>> Get([FromQuery] double latitud, [FromQuery] double longitud)
     {
         List<TrekiResponse>? trekisAround = null;
-        List<TrekiDto> trekis = null;
+        List<TrekiDto>? trekis = null;
         try
         {
             trekis = await trekiService.GetTrekisAround(latitud, longitud);
@@ -75,7 +75,7 @@ public class Un2TrekTrekiController : ControllerBase
         }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, string.Empty);
+            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
             return BadRequest(ex.Message);
         }
 
