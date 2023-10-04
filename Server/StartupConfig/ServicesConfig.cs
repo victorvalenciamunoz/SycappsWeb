@@ -32,7 +32,7 @@ public static class ServicesConfig
                     Id = "bearerAuth"
                 }
             },
-            new string[] { }
+            Array.Empty<string>()
             }
         };
 
@@ -97,20 +97,13 @@ public static class ServicesConfig
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration.GetValue<string>("Authentication:Issuer"),
             ValidAudience = builder.Configuration.GetValue<string>("Authentication:Audience"),
             IssuerSigningKey = new SymmetricSecurityKey(
-                                Encoding.ASCII.GetBytes(builder.Configuration.GetValue<string>("Authentication:SecretKey")))
-        };
-        opts.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = async ctx =>
-            {
-                var putBreakpointHere = true;
-                var exceptionMessage = ctx.Exception;
-            },
-        };
+                                Encoding.ASCII.GetBytes(builder.Configuration.GetValue<string>("Authentication:SecretKey")!))
+        };        
     });
         builder.Services.AddIdentityCore<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
         .AddRoles<IdentityRole>()

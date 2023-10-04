@@ -70,6 +70,19 @@ public class AuthenticationController : ControllerBase
         }
     }
 
+    [HttpGet("renew")]
+    public async Task<ActionResult<string>> Renew()
+    {
+        var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "userName").FirstOrDefault();
+        if (emailClaim != null)
+        {
+            return Ok(await SetupToken(emailClaim.Value));
+        }
+        else
+        {
+            return BadRequest("Could not renew token");
+        }
+    }
 
     private async Task<string> SetupToken(string userEmail)
     {
@@ -103,7 +116,7 @@ public class AuthenticationController : ControllerBase
             new Claim("userRoles", string.Join(", ", userRoles).TrimEnd(',',' '))
         };
         claims.Add(new(JwtRegisteredClaimNames.Sub, identityUser.Id));
-        claims.Add(new(JwtRegisteredClaimNames.UniqueName, identityUser.Email.ToString()));
+        claims.Add(new("userName", identityUser.Email.ToString()));
 
         if (!string.IsNullOrEmpty(fullUserName))
         {

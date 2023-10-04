@@ -7,7 +7,6 @@ using SycappsWeb.Server.Controllers.v1;
 using SycappsWeb.Server.Models.IntegrationModels;
 using SycappsWeb.Server.Services;
 using SycappsWeb.Server.Tests.Controllers;
-using Syncfusion.XlsIO.Implementation.PivotAnalysis;
 using System.Security.Claims;
 using System.Security.Principal;
 

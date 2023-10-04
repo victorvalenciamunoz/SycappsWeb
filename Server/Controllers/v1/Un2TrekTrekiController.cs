@@ -62,7 +62,7 @@ public class Un2TrekTrekiController : ControllerBase
             {
                 logger.LogError(modelError.Errors[0].ErrorMessage, string.Empty);
             }
-            return BadRequest(ModelState);
+            return BadRequest(StringConstants.RequiredFieldsMissing);
         }
         try
         {
@@ -103,7 +103,7 @@ public class Un2TrekTrekiController : ControllerBase
             {
                 logger.LogError(modelError.Errors[0].ErrorMessage, string.Empty);
             }
-            return BadRequest(ModelState);
+            return BadRequest(StringConstants.RequiredFieldsMissing);
         }
         var result = await trekiService.Modify(treki.ToDto());
 
