@@ -87,7 +87,7 @@ public class Un2TrekTrekiController : ControllerBase
         var result = await trekiService.Delete(id);
         if (result.HasErrors)
         {
-            logger.LogError(result.Errors[0], string.Empty);
+            logger.LogError(message: $"{result.Errors![0]}", System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
             return BadRequest(result.Errors[0]);
         }
 
@@ -123,7 +123,7 @@ public class Un2TrekTrekiController : ControllerBase
         var result = await trekiService.Capture(captureTreki, idUsuario!);
         if (result.HasErrors)
         {
-            logger.LogError(result.Errors[0], string.Empty);
+            logger.LogError(result.Errors[0], System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
             return BadRequest(result.Errors[0]);
         }
 
