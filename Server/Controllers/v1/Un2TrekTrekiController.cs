@@ -36,8 +36,11 @@ public class Un2TrekTrekiController : ControllerBase
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
-            return BadRequest(ex.Message);
+            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+            {
+                Detail = ex.Message,
+            });
         }
 
         if (trekis != null && trekis.Any())
@@ -62,7 +65,7 @@ public class Un2TrekTrekiController : ControllerBase
             {
                 logger.LogError(modelError.Errors[0].ErrorMessage, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
             }
-            return BadRequest(StringConstants.RequiredFieldsMissing);
+            return BadRequest(new ValidationProblemDetails(ModelState));
         }
         try
         {
@@ -76,7 +79,10 @@ public class Un2TrekTrekiController : ControllerBase
         catch (Exception ex)
         {
             logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
-            return BadRequest(ex.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+            {
+                Detail = ex.Message,
+            });
         }
 
     }
@@ -84,16 +90,30 @@ public class Un2TrekTrekiController : ControllerBase
     [HttpDelete("{id}/delete")]
     public async Task<IActionResult> Delete(int id)
     {
-        var result = await trekiService.Delete(id);
-        if (result.HasErrors)
+        try
         {
-            logger.LogError(message: $"{result.Errors![0]}", System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
-            return BadRequest(result.Errors[0]);
+            var result = await trekiService.Delete(id);
+            if (result.HasErrors)
+            {
+                logger.LogError(message: $"{result.Errors![0]}", System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+                return BadRequest(new ProblemDetails
+                {
+                    Detail = result.Errors[0]
+                });
+            }
+            return Ok(result.Element);
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+            {
+                Detail = ex.Message,
+            });
         }
 
-        return Ok(result.Element);
     }
-    
+
     [HttpPut("{id}/update")]
     public async Task<IActionResult> Put([FromBody] TrekiRequest treki)
     {
@@ -103,31 +123,69 @@ public class Un2TrekTrekiController : ControllerBase
             {
                 logger.LogError(modelError.Errors[0].ErrorMessage, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
             }
-            return BadRequest(StringConstants.RequiredFieldsMissing);
+            return BadRequest(new ValidationProblemDetails(ModelState));
         }
-        var result = await trekiService.Modify(treki.ToDto());
 
-        if (result.HasErrors)
+        try
         {
-            logger.LogError(result.Errors[0], System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
-            return BadRequest(result.Errors[0]);
-        }
+            var result = await trekiService.Modify(treki.ToDto());
 
-        return Ok(result.Element);
+            if (result.HasErrors)
+            {
+                logger.LogError(result.Errors[0], System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+                return BadRequest(new ProblemDetails
+                {
+                    Detail = result.Errors[0]
+                });
+            }
+
+            return Ok(result.Element);
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+            {
+                Detail = ex.Message,
+            });
+        }
     }
 
     [HttpPost("capture")]
     public async Task<IActionResult> Capture(CaptureTrekiRequest captureTreki)
     {
-        var idUsuario = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        var result = await trekiService.Capture(captureTreki, idUsuario!);
-        if (result.HasErrors)
+        if (!ModelState.IsValid)
         {
-            logger.LogError(result.Errors[0], System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
-            return BadRequest(result.Errors[0]);
+            foreach (var modelError in ModelState.Values)
+            {
+                logger.LogError(modelError.Errors[0].ErrorMessage, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            }
+            return BadRequest(new ValidationProblemDetails(ModelState));
         }
 
-        return Ok(result.Element);
+        try
+        {
+            var idUsuario = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var result = await trekiService.Capture(captureTreki, idUsuario!);
+            if (result.HasErrors)
+            {
+                logger.LogError(result.Errors[0], System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+                return BadRequest(new ProblemDetails
+                {
+                    Detail = result.Errors[0]
+                });
+            }
+
+            return Ok(result.Element);
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+            {
+                Detail = ex.Message,
+            });
+        }
     }
 
 }

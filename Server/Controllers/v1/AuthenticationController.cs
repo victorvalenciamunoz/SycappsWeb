@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SycappsWeb.Shared.Models.Un2Trek;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,16 +15,19 @@ namespace SycappsWeb.Server.Controllers.v1;
 [AllowAnonymous]
 public class AuthenticationController : ControllerBase
 {
-    private readonly UserManager<IdentityUser> userManager;    
+    private readonly UserManager<IdentityUser> userManager;
     private readonly IConfiguration config;
+    private readonly ILogger<AuthenticationController> logger;
 
-    public AuthenticationController(UserManager<IdentityUser> userManager,                                
-                                    IConfiguration config)
+    public AuthenticationController(UserManager<IdentityUser> userManager,
+                                    IConfiguration config,
+                                    ILogger<AuthenticationController> logger)
     {
-        this.userManager = userManager;        
+        this.userManager = userManager;
         this.config = config;
+        this.logger = logger;
     }
-    
+
     [HttpPost("login")]
     public async Task<ActionResult<string>> Login(LoginRequest loginRequest)
     {
@@ -37,18 +41,34 @@ public class AuthenticationController : ControllerBase
                     return Ok(await SetupToken(loginRequest.Email));
                 }
             }
-            return Unauthorized(StringConstants.InvalidCredentialsErrorCode);
+            return Unauthorized(new ProblemDetails
+            {
+                Title = "Invalid credentials",
+                Detail = StringConstants.InvalidCredentialsErrorCode
+            });
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);  
+            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+            {
+                Detail = ex.Message,
+            });
         }
-        
+
     }
 
     [HttpPost("register")]
     public async Task<ActionResult<string>> Post(RegisterRequest registerRequest)
     {
+        if (!ModelState.IsValid)
+        {
+            foreach (var modelError in ModelState.Values)
+            {
+                logger.LogError(modelError.Errors[0].ErrorMessage, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            }
+            return BadRequest(new ValidationProblemDetails(ModelState));
+        }
         var identityUser = new IdentityUser
         {
             UserName = registerRequest.Email,
@@ -124,7 +144,7 @@ public class AuthenticationController : ControllerBase
         }
         var secretKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(config.GetValue<string>("Authentication:SecretKey")!));
         var creds = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-        
+
         var now = DateTime.Now;
         var expiration = now.AddMinutes(180);
         var token = new JwtSecurityToken(
