@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Events;
 using SycappsWeb.Server.Data;
 using SycappsWeb.Server.Services;
 using SycappsWeb.Server.StartupConfig;
@@ -29,6 +31,12 @@ builder.Services.AddScoped<IContactMessageService, ContactMessageService>();
 builder.Services.AddScoped<IActividadService, ActividadService>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .CreateLogger();
+builder.Host.UseSerilog();
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -49,6 +57,7 @@ else
     app.UseHsts();
 }
 
+app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();

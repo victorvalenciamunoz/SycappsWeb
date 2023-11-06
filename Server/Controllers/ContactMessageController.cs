@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 using SycappsWeb.Server.Services;
 using SycappsWeb.Shared.Entities;
 using SycappsWeb.Shared.Models;
@@ -12,12 +13,10 @@ namespace SycappsWeb.Server.Controllers
     [AllowAnonymous]
     public class ContactMessageController : ControllerBase
     {
-        private readonly ILogger<ContactMessageController> logger;
         private readonly IContactMessageService contactService;
 
-        public ContactMessageController(ILogger<ContactMessageController> logger, IContactMessageService contactService)
+        public ContactMessageController(IContactMessageService contactService)
         {
-            this.logger = logger;
             this.contactService = contactService;
         }
 
@@ -28,7 +27,7 @@ namespace SycappsWeb.Server.Controllers
             {
                 foreach (var modelError in ModelState.Values)
                 {
-                    logger.LogError(modelError.Errors[0].ErrorMessage, string.Empty);
+                    Log.Logger.Error("Error validating contact message {@modelError.Errors}", modelError.Errors);
                 }
                 return BadRequest(ModelState);
             }
@@ -41,7 +40,7 @@ namespace SycappsWeb.Server.Controllers
             }
             catch (Exception ex)
             {
-                logger.LogCritical(ex, string.Empty);
+                Log.Logger.Fatal("General exception creating contact message {@messageRequest} {@ex}", messageRequest, ex);
                 return BadRequest(ex.Message);
             }
         }
@@ -57,7 +56,7 @@ namespace SycappsWeb.Server.Controllers
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, string.Empty);
+                Log.Logger.Fatal("General exception retreiving contact message list {@filter} {@ex}", filter, ex);
                 BadRequest(ex.Message);
             }
 

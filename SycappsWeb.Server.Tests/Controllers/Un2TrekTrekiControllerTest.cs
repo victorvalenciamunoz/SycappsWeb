@@ -31,7 +31,7 @@ public class Un2TrekTrekiControllerTest : IClassFixture<TrekiControllerFixture>
         this.fixture.MockTrekiService.Setup(service => service.Capture(captureRequest, It.IsAny<string>())).ReturnsAsync(captureResult);
 
         //Arrange
-        var sut = new Un2TrekTrekiController(this.fixture.MockLoggerService.Object, this.fixture.MockTrekiService.Object);
+        var sut = new Un2TrekTrekiController(this.fixture.MockTrekiService.Object);
         SetControllerContext(sut);
 
         // Act
@@ -52,7 +52,7 @@ public class Un2TrekTrekiControllerTest : IClassFixture<TrekiControllerFixture>
         this.fixture.MockTrekiService.Setup(service => service.Capture(captureRequest, It.IsAny<string>())).ReturnsAsync(captureResult);
 
         //Arrange
-        var sut = new Un2TrekTrekiController(this.fixture.MockLoggerService.Object, this.fixture.MockTrekiService.Object);
+        var sut = new Un2TrekTrekiController(this.fixture.MockTrekiService.Object);
         SetControllerContext(sut);
 
         //Act

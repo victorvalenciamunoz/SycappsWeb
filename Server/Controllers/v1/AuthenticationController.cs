@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using SycappsWeb.Shared.Models.Un2Trek;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,16 +17,13 @@ namespace SycappsWeb.Server.Controllers.v1;
 public class AuthenticationController : ControllerBase
 {
     private readonly UserManager<IdentityUser> userManager;
-    private readonly IConfiguration config;
-    private readonly ILogger<AuthenticationController> logger;
+    private readonly IConfiguration config;    
 
     public AuthenticationController(UserManager<IdentityUser> userManager,
-                                    IConfiguration config,
-                                    ILogger<AuthenticationController> logger)
+                                    IConfiguration config)
     {
         this.userManager = userManager;
         this.config = config;
-        this.logger = logger;
     }
 
     [HttpPost("login")]
@@ -48,14 +46,13 @@ public class AuthenticationController : ControllerBase
             });
         }
         catch (Exception ex)
-        {
-            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+        {            
+            Log.Logger.Fatal("General exception login user {@loginRequest} {@ex}", loginRequest, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Detail = ex.Message,
             });
         }
-
     }
 
     [HttpPost("register")]
@@ -65,7 +62,7 @@ public class AuthenticationController : ControllerBase
         {
             foreach (var modelError in ModelState.Values)
             {
-                logger.LogError(modelError.Errors[0].ErrorMessage, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+                Log.Logger.Error("Error validating user register data {@registerRequest} {@modelError.Errors}", registerRequest, modelError.Errors);
             }
             return BadRequest(new ValidationProblemDetails(ModelState));
         }

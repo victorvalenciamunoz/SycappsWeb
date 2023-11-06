@@ -1,11 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Serilog;
 using SycappsWeb.Server.ExtensionMethods;
 using SycappsWeb.Server.Models.Un2Trek;
 using SycappsWeb.Server.Services;
+using SycappsWeb.Shared.Entities.Un2Trek;
 using SycappsWeb.Shared.ExtensionMethods;
 using SycappsWeb.Shared.Models.Un2Trek;
 using System.Security.Claims;
+using static Syncfusion.XlsIO.Parser.Biff_Records.ExternSheetRecord;
 
 namespace SycappsWeb.Server.Controllers.v1;
 
@@ -13,14 +17,11 @@ namespace SycappsWeb.Server.Controllers.v1;
 [ApiController]
 [Authorize]
 public class Un2TrekTrekiController : ControllerBase
-{
-    private readonly ILogger<Un2TrekTrekiController> logger;
+{    
     private readonly ITrekiService trekiService;
 
-    public Un2TrekTrekiController(ILogger<Un2TrekTrekiController> logger,
-                                ITrekiService trekiService)
-    {
-        this.logger = logger;
+    public Un2TrekTrekiController(ITrekiService trekiService)
+    {        
         this.trekiService = trekiService;
     }
 
@@ -36,7 +37,7 @@ public class Un2TrekTrekiController : ControllerBase
         }
         catch (Exception ex)
         {
-            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            Log.Logger.Fatal("Error retreiving trekis around {@latitud} {@longitud} => {@ex}", ex);            
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Detail = ex.Message,
@@ -63,7 +64,7 @@ public class Un2TrekTrekiController : ControllerBase
         {
             foreach (var modelError in ModelState.Values)
             {
-                logger.LogError(modelError.Errors[0].ErrorMessage, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+                Log.Logger.Error("Error validating new treki {@treki} {@modelError.Errors}", treki, modelError.Errors);
             }
             return BadRequest(new ValidationProblemDetails(ModelState));
         }
@@ -78,7 +79,7 @@ public class Un2TrekTrekiController : ControllerBase
         }
         catch (Exception ex)
         {
-            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            Log.Logger.Fatal("General exception adding treki {@treki} {@ex}", treki, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Detail = ex.Message,
@@ -95,7 +96,7 @@ public class Un2TrekTrekiController : ControllerBase
             var result = await trekiService.Delete(id);
             if (result.HasErrors)
             {
-                logger.LogError(message: $"{result.Errors![0]}", System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+                Log.Logger.Error("Error deleting treki {@id} {@result.Errors}", id, result.Errors);
                 return BadRequest(new ProblemDetails
                 {
                     Detail = result.Errors[0]
@@ -105,7 +106,7 @@ public class Un2TrekTrekiController : ControllerBase
         }
         catch (Exception ex)
         {
-            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            Log.Logger.Fatal("General exception deleting treki {@id} {@ex}", id, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Detail = ex.Message,
@@ -121,7 +122,7 @@ public class Un2TrekTrekiController : ControllerBase
         {
             foreach (var modelError in ModelState.Values)
             {
-                logger.LogError(modelError.Errors[0].ErrorMessage, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+                Log.Logger.Error("Error validating treki on update {@treki} {@modelError.Errors}", treki, modelError.Errors);
             }
             return BadRequest(new ValidationProblemDetails(ModelState));
         }
@@ -132,7 +133,7 @@ public class Un2TrekTrekiController : ControllerBase
 
             if (result.HasErrors)
             {
-                logger.LogError(result.Errors[0], System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+                Log.Logger.Error("Error updating treki {@treki} {@result.Errors}", treki, result.Errors);
                 return BadRequest(new ProblemDetails
                 {
                     Detail = result.Errors[0]
@@ -143,7 +144,7 @@ public class Un2TrekTrekiController : ControllerBase
         }
         catch (Exception ex)
         {
-            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            Log.Logger.Fatal("General exception updating treki {@treki} {@ex}", treki, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Detail = ex.Message,
@@ -158,7 +159,7 @@ public class Un2TrekTrekiController : ControllerBase
         {
             foreach (var modelError in ModelState.Values)
             {
-                logger.LogError(modelError.Errors[0].ErrorMessage, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+                Log.Logger.Error("Error validating treki on capture {@captureTreki} {@modelError.Errors}", captureTreki, modelError.Errors);
             }
             return BadRequest(new ValidationProblemDetails(ModelState));
         }
@@ -169,7 +170,7 @@ public class Un2TrekTrekiController : ControllerBase
             var result = await trekiService.Capture(captureTreki, idUsuario!);
             if (result.HasErrors)
             {
-                logger.LogError(result.Errors[0], System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+                Log.Logger.Error("Error capturing treki {@captureTreki} {@result.Errors}", captureTreki, result.Errors);
                 return BadRequest(new ProblemDetails
                 {
                     Detail = result.Errors[0]
@@ -180,7 +181,7 @@ public class Un2TrekTrekiController : ControllerBase
         }
         catch (Exception ex)
         {
-            logger.LogCritical(exception: ex, System.Reflection.MethodBase.GetCurrentMethod()?.Name ?? "");
+            Log.Logger.Fatal("General exception capturing treki {@captureTreki} {@ex}", captureTreki, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Detail = ex.Message,
