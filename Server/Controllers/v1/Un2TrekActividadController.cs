@@ -22,15 +22,13 @@ public class Un2TrekActividadController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ActividadResponse>> Get(int id)
+    public async Task<IActionResult> Get(int id)
     {
         var actividad = await actividadService.Get(id);
-        if (actividad != null)
-        {
-            return Ok(actividad);
-        }
+        return actividad.Match<IActionResult>(
+            _ => Ok(actividad),
+            _ => Problem());
 
-        return NotFound();
     }
 
     [HttpPost]

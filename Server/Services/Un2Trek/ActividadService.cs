@@ -4,6 +4,7 @@ using SycappsWeb.Shared.Entities.Un2Trek;
 using SycappsWeb.Shared.Models;
 using SycappsWeb.Shared.Models.Un2Trek;
 using SycappsWeb.Shared.ExtensionMethods;
+using ErrorOr;
 
 namespace SycappsWeb.Server.Services;
 
@@ -16,13 +17,13 @@ public class ActividadService : IActividadService
         this.context = context;
     }
     
-    public async Task<ActividadResponse> Get(int id)
+    public async Task<ErrorOr<ActividadResponse>> Get(int id)
     {
         var actividad = await context.Actividades.Where(c=> c.Id == id).FirstOrDefaultAsync();
         if (actividad!=null)
             return actividad.ToResponse();
 
-        return null;
+        return Error.NotFound(description:"Activity not found");
     }
     public async Task<Actividad> Add(Actividad newActividad)
     {
