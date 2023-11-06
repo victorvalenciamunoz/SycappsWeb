@@ -39,7 +39,7 @@ public class TrekiServiceTests :IClassFixture<TrekiServiceFixture>
         var result = await trekiService.Capture(new Shared.Models.Un2Trek.CaptureTrekiRequest(), "");
 
         //Assert
-        result.HasErrors.Should().Be(true);
+        result.IsError.Should().Be(true);
         result.Errors[0].Equals(StringConstants.UserNotFoundErrorCode);
     }
 }

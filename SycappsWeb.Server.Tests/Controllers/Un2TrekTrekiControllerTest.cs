@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using ErrorOr;
+using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -26,9 +27,8 @@ public class Un2TrekTrekiControllerTest : IClassFixture<TrekiControllerFixture>
     {   
         var captureRequest = new Shared.Models.Un2Trek.CaptureTrekiRequest();
 
-        var captureResult = new ServiceResultSingleElement<bool>();
-        captureResult.Errors.Clear();
-        this.fixture.MockTrekiService.Setup(service => service.Capture(captureRequest, It.IsAny<string>())).ReturnsAsync(captureResult);
+        
+        this.fixture.MockTrekiService.Setup(service => service.Capture(captureRequest, It.IsAny<string>())).ReturnsAsync(Result.Success);
 
         //Arrange
         var sut = new Un2TrekTrekiController(this.fixture.MockTrekiService.Object);
@@ -47,9 +47,7 @@ public class Un2TrekTrekiControllerTest : IClassFixture<TrekiControllerFixture>
     { 
         var captureRequest = new Shared.Models.Un2Trek.CaptureTrekiRequest();
 
-        var captureResult = new ServiceResultSingleElement<bool>();
-        captureResult.Errors.Add(string.Empty);
-        this.fixture.MockTrekiService.Setup(service => service.Capture(captureRequest, It.IsAny<string>())).ReturnsAsync(captureResult);
+        this.fixture.MockTrekiService.Setup(service => service.Capture(captureRequest, It.IsAny<string>())).ReturnsAsync(Result.Success);
 
         //Arrange
         var sut = new Un2TrekTrekiController(this.fixture.MockTrekiService.Object);

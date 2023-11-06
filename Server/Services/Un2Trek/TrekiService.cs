@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using ErrorOr;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SycappsWeb.Server.Data;
 using SycappsWeb.Server.ExtensionMethods;
@@ -32,18 +33,17 @@ public class TrekiService : ITrekiService
         return unitOfWork.TrekiRepository.Add(trekiToInsert);
     }
 
-    public async Task<ServiceResultSingleElement<bool>> Modify(TrekiDto trekiToModify)
+    public async Task<ErrorOr<Updated>> Modify(TrekiDto trekiToModify)
     {
         ServiceResultSingleElement<bool> result = new();
         var treki = await unitOfWork.TrekiRepository.GetById(trekiToModify.Id);
         if (treki == null)
         {
-            result.Errors.Add(StringConstants.TrekiNotFoundErrorCode);
-            return result;
+            return Error.NotFound(StringConstants.TrekiNotFoundErrorCode, description: "Treki not found");
         }
         result.Element =  await unitOfWork.TrekiRepository.Modify(trekiToModify.ToEntity());
 
-        return result;
+        return Result.Updated;
     }
 
     public async Task<List<TrekiDto>> GetTrekisAround(double currentLatitude, double currentLongitude)
@@ -90,23 +90,22 @@ public class TrekiService : ITrekiService
         return result;
     }
 
-    public async Task<ServiceResultSingleElement<bool>> Delete(int id)
+    public async Task<ErrorOr<Deleted>> Delete(int id)
     {
         ServiceResultSingleElement<bool> result = new();
         var treki = await unitOfWork.TrekiRepository.GetById(id);
         if (treki == null)
         {
-            result.Errors.Add(StringConstants.TrekiNotFoundErrorCode);
-            return result;
+            return Error.NotFound(StringConstants.TrekiNotFoundErrorCode, description: "Treki not found");            
         }
         
         treki.Activo = false;
         result.Element =  await unitOfWork.TrekiRepository.Modify(treki);
         
-        return result;
+        return Result.Deleted;
     }
 
-    public async Task<ServiceResultSingleElement<bool>> Capture(CaptureTrekiRequest capture, string userId)
+    public async Task<ErrorOr<Success>> Capture(CaptureTrekiRequest capture, string userId)
     {
         ServiceResultSingleElement<bool> result = new ServiceResultSingleElement<bool>();
 
@@ -116,57 +115,48 @@ public class TrekiService : ITrekiService
 
         var validationResult = await ValidateCaptureData(capture, treki, user);
         
-        if (validationResult.HasErrors)
+        if (validationResult.IsError)
         {
-            result.Errors.Add(validationResult.Errors[0]);
-            return result;
+            return validationResult;
         }
 
         await unitOfWork.TrekiRepository.CaptureTreki(treki, user!.Id, capture.ActivityId);
-        
-        result.Element = true;
-        return result;
+
+        return Result.Success;
     }
 
-    private async Task<ServiceResult> ValidateCaptureData(CaptureTrekiRequest captureData, Treki treki, IdentityUser user)
-    {
-        var result = new ServiceResult();
+    private async Task<ErrorOr<Success>> ValidateCaptureData(CaptureTrekiRequest captureData, Treki treki, IdentityUser user)
+    {        
         if (user == null)
         {
-            result.Errors.Add(StringConstants.UserNotFoundErrorCode);
-            return result;
+            return Error.NotFound(StringConstants.UserNotFoundErrorCode, description: "User not found");
         }
         
         if (treki == null)
         {
-            result.Errors.Add(StringConstants.TrekiNotFoundErrorCode);
-            return result;
+            return Error.NotFound(StringConstants.TrekiNotFoundErrorCode, description: "Treki not found");                        
         }
 
         var activity = unitOfWork.ActivityRepository.GetById(captureData.ActivityId);
         if (activity == null)
         {
-            result.Errors.Add(StringConstants.ActivityNotFoundErrorCode);
-            return result;
+            return Error.NotFound(StringConstants.ActivityNotFoundErrorCode, description: "Activity not found");            
         }
 
         var trekiListInActivity = await GetTrekiListByActivity(captureData.ActivityId);
         if (trekiListInActivity == null || !trekiListInActivity.Any())
         {
-            result.Errors.Add(StringConstants.ActivityWithNoTrekisErrorCode);
-            return result;
+            return Error.NotFound(StringConstants.ActivityWithNoTrekisErrorCode, description: "Activity with no trekis");            
         }
 
         if (!trekiListInActivity.Any(c=> c.Id == treki.Id))
         {
-            result.Errors.Add(StringConstants.TrekiNotFoundInActivityErrorCode);
-            return result;
+            return Error.NotFound(StringConstants.TrekiNotFoundInActivityErrorCode, description: "Treki not found in activity");
         }
 
         if (unitOfWork.TrekiRepository.IsTrekiAlreadyCaptured(treki.Id,user.Id, captureData.ActivityId))
         {
-            result.Errors.Add(StringConstants.TrekiAlreadyCapturedErrorCode);
-            return result;
+            return SycappsError.TrekiAlreadyCaptured;            
         }
 
         Geolocation.Coordinate origin = new Geolocation.Coordinate(captureData.TrekiLatitude, captureData.TrekiLongitude);
@@ -175,12 +165,11 @@ public class TrekiService : ITrekiService
         var threshold = Convert.ToDouble(config.GetValue<string>("Threshold")!);
         if (distance> threshold)
         {
-            result.Errors.Add(StringConstants.InvalidDistanceErrorCode);
-            return result;
+            return SycappsError.InvalidDistance;
         }
 
-      
 
-        return result;
+
+        return Result.Success;
     }
 }

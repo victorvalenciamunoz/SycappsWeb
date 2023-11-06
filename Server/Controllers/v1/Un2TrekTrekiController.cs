@@ -1,15 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using ErrorOr;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Serilog;
 using SycappsWeb.Server.ExtensionMethods;
 using SycappsWeb.Server.Models.Un2Trek;
 using SycappsWeb.Server.Services;
-using SycappsWeb.Shared.Entities.Un2Trek;
 using SycappsWeb.Shared.ExtensionMethods;
 using SycappsWeb.Shared.Models.Un2Trek;
 using System.Security.Claims;
-using static Syncfusion.XlsIO.Parser.Biff_Records.ExternSheetRecord;
 
 namespace SycappsWeb.Server.Controllers.v1;
 
@@ -17,11 +15,11 @@ namespace SycappsWeb.Server.Controllers.v1;
 [ApiController]
 [Authorize]
 public class Un2TrekTrekiController : ControllerBase
-{    
+{
     private readonly ITrekiService trekiService;
 
     public Un2TrekTrekiController(ITrekiService trekiService)
-    {        
+    {
         this.trekiService = trekiService;
     }
 
@@ -37,7 +35,7 @@ public class Un2TrekTrekiController : ControllerBase
         }
         catch (Exception ex)
         {
-            Log.Logger.Fatal("Error retreiving trekis around {@latitud} {@longitud} => {@ex}", ex);            
+            Log.Logger.Fatal("Error retriving trekis around latitude:{@latitud} longitude{@longitud}\n\r{@ex}", ex);
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Detail = ex.Message,
@@ -79,7 +77,7 @@ public class Un2TrekTrekiController : ControllerBase
         }
         catch (Exception ex)
         {
-            Log.Logger.Fatal("General exception adding treki {@treki} {@ex}", treki, ex);
+            Log.Logger.Fatal("General exception adding treki {@treki}\n\r{@ex}", treki, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Detail = ex.Message,
@@ -94,19 +92,19 @@ public class Un2TrekTrekiController : ControllerBase
         try
         {
             var result = await trekiService.Delete(id);
-            if (result.HasErrors)
+            if (result.IsError)
             {
                 Log.Logger.Error("Error deleting treki {@id} {@result.Errors}", id, result.Errors);
                 return BadRequest(new ProblemDetails
                 {
-                    Detail = result.Errors[0]
+                    Detail = result.Errors.First().Description
                 });
             }
-            return Ok(result.Element);
+            return Ok(Result.Deleted);
         }
         catch (Exception ex)
         {
-            Log.Logger.Fatal("General exception deleting treki {@id} {@ex}", id, ex);
+            Log.Logger.Fatal("General exception deleting treki {@id}\r\n{@ex}", id, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Detail = ex.Message,
@@ -131,20 +129,20 @@ public class Un2TrekTrekiController : ControllerBase
         {
             var result = await trekiService.Modify(treki.ToDto());
 
-            if (result.HasErrors)
+            if (result.IsError)
             {
                 Log.Logger.Error("Error updating treki {@treki} {@result.Errors}", treki, result.Errors);
                 return BadRequest(new ProblemDetails
                 {
-                    Detail = result.Errors[0]
+                    Detail = result.Errors.First().Description
                 });
             }
 
-            return Ok(result.Element);
+            return Ok(Result.Updated);
         }
         catch (Exception ex)
         {
-            Log.Logger.Fatal("General exception updating treki {@treki} {@ex}", treki, ex);
+            Log.Logger.Fatal("General exception updating treki {@treki}\r\n{@ex}", treki, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Detail = ex.Message,
@@ -168,25 +166,24 @@ public class Un2TrekTrekiController : ControllerBase
         {
             var idUsuario = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             var result = await trekiService.Capture(captureTreki, idUsuario!);
-            if (result.HasErrors)
+            if (result.IsError)
             {
                 Log.Logger.Error("Error capturing treki {@captureTreki} {@result.Errors}", captureTreki, result.Errors);
                 return BadRequest(new ProblemDetails
                 {
-                    Detail = result.Errors[0]
+                    Detail = result.Errors.First().Description
                 });
             }
 
-            return Ok(result.Element);
+            return Ok(Result.Success);
         }
         catch (Exception ex)
         {
-            Log.Logger.Fatal("General exception capturing treki {@captureTreki} {@ex}", captureTreki, ex);
+            Log.Logger.Fatal("General exception capturing treki {@captureTreki}\r\n{@ex}", captureTreki, ex);
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
             {
                 Detail = ex.Message,
             });
         }
     }
-
 }

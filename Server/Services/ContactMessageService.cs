@@ -15,6 +15,7 @@ public class ContactMessageService : IContactMessageService
     }
     public Task Add(MensajeContacto message)
     {
+        throw new Exception();
         context.Add(message);
         return context.SaveChangesAsync();
     }

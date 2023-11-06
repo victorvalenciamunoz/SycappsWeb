@@ -40,7 +40,7 @@ namespace SycappsWeb.Server.Controllers
             }
             catch (Exception ex)
             {
-                Log.Logger.Fatal("General exception creating contact message {@messageRequest} {@ex}", messageRequest, ex);
+                Log.Logger.Fatal("General exception creating contact message {@messageRequest}\r\n{@ex}", messageRequest, ex);
                 return BadRequest(ex.Message);
             }
         }
@@ -56,7 +56,7 @@ namespace SycappsWeb.Server.Controllers
             }
             catch (Exception ex)
             {
-                Log.Logger.Fatal("General exception retreiving contact message list {@filter} {@ex}", filter, ex);
+                Log.Logger.Fatal("General exception retreiving contact message list {@filter}\r\n{@ex}", filter, ex);
                 BadRequest(ex.Message);
             }
 
