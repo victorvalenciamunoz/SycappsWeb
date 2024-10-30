@@ -137,7 +137,7 @@ public class TrekiService : ITrekiService
             return Error.NotFound(StringConstants.TrekiNotFoundErrorCode, description: "Treki not found");                        
         }
 
-        var activity = unitOfWork.ActivityRepository.GetById(captureData.ActivityId);
+        var activity = await unitOfWork.ActivityRepository.GetById(captureData.ActivityId);
         if (activity == null)
         {
             return Error.NotFound(StringConstants.ActivityNotFoundErrorCode, description: "Activity not found");            

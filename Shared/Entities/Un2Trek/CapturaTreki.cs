@@ -6,7 +6,7 @@ public class CapturaTreki
 {
     public int Id { get; set; }
     public string UsuarioId { get; set; }
-    public IdentityUser Usuario { get; set; }
+    public ApplicationUser Usuario { get; set; }
     public int TrekiId { get; set; }
     public Treki Treki { get; set; }
     public int ActividadId { get; set; }

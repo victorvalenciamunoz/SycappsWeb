@@ -59,7 +59,7 @@ public class TrekiRepository : ITrekiRepository
     
     public async Task<Treki> GetTrekiByCoordinates(double latitude, double longitude)
     {
-        return await context.Trekis.Where(c => c.Latitud == latitude && c.Longitud == latitude).FirstOrDefaultAsync();
+        return await context.Trekis.Where(c => c.Latitud == latitude && c.Longitud == longitude).FirstOrDefaultAsync();
     }
     
     public async Task CaptureTreki(Treki treki, string userId, int activityId)

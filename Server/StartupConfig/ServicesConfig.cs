@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SycappsWeb.Server.Data;
+using SycappsWeb.Server.Models;
+using SycappsWeb.Shared.Entities;
 using System.Text;
 
 namespace SycappsWeb.Server.StartupConfig;
@@ -103,11 +104,25 @@ public static class ServicesConfig
             ValidAudience = builder.Configuration.GetValue<string>("Authentication:Audience"),
             IssuerSigningKey = new SymmetricSecurityKey(
                                 Encoding.ASCII.GetBytes(builder.Configuration.GetValue<string>("Authentication:SecretKey")!))
-        };        
+        };
     });
         builder.Services.AddIdentityCore<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
         .AddRoles<IdentityRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
+    }
+    public static void AddDomainEventHandlers(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddSingleton<IEventQueue, EventQueue>();
+        builder.Services.AddHostedService<EventProcessingService>();
+        builder.Services.AddScoped<IEventService, EventService>();
+        builder.Services.AddScoped<IEventHandler<UserRegisteredEvent>, UserRegisteredEventHandler>();
+    }
+
+    public static void AddCustomIdentity(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
     }
 }

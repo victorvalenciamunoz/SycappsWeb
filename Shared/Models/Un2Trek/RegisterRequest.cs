@@ -17,4 +17,6 @@ public class RegisterRequest
     [Required]
     [MinLength(5)]
     public string Password { get; set; }
+    
+    public bool ReceivePromotionalEmails { get; set; }
 }

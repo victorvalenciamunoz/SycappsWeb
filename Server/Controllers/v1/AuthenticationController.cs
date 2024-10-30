@@ -6,8 +6,14 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using SycappsWeb.Shared.Models.Un2Trek;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Mail;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
+using SendGrid.Helpers.Mail;
+using SendGrid;
+using SycappsWeb.Server.Models;
+using SycappsWeb.Shared.Entities;
 
 namespace SycappsWeb.Server.Controllers.v1;
 
@@ -17,13 +23,15 @@ namespace SycappsWeb.Server.Controllers.v1;
 public class AuthenticationController : ControllerBase
 {
     private readonly UserManager<IdentityUser> userManager;
-    private readonly IConfiguration config;    
+    private readonly IConfiguration config;
+    private readonly IEventService eventService;
 
     public AuthenticationController(UserManager<IdentityUser> userManager,
-                                    IConfiguration config)
+                                    IConfiguration config, IEventService eventService)
     {
         this.userManager = userManager;
         this.config = config;
+        this.eventService = eventService;
     }
 
     [HttpPost("login")]
@@ -66,24 +74,48 @@ public class AuthenticationController : ControllerBase
             }
             return BadRequest(new ValidationProblemDetails(ModelState));
         }
-        var identityUser = new IdentityUser
+        var identityUser = new ApplicationUser
         {
             UserName = registerRequest.Email,
             Email = registerRequest.Email,
-            EmailConfirmed = true
+            EmailConfirmed = false,
+            ReceivePromotionalEmails = registerRequest.ReceivePromotionalEmails
         };
         var result = await userManager.CreateAsync(identityUser, registerRequest.Password);
 
         if (result.Succeeded)
         {
-            await userManager.AddToRoleAsync(identityUser, "Un2TrekUser");
-            await userManager.AddClaimAsync(identityUser, new Claim("fullName", $"{registerRequest.Name} {registerRequest.LastName}"));
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(identityUser);
+            var confirmationLink = Url.Action(nameof(ConfirmEmail), "Authentication", new { token, email = identityUser.Email }, Request.Scheme);
 
-            return await SetupToken(registerRequest.Email);
+            var domainEvent = new UserRegisteredEvent(identityUser.Email, $"{registerRequest.Name} {registerRequest.LastName}", confirmationLink);
+            await eventService.Publish(domainEvent);
+
+            return Ok("Registration successful. Please check your email to confirm your account.");
         }
         else
         {
             return BadRequest(result.Errors);
+        }
+    }
+
+    [HttpGet("confirmemail")]
+    public async Task<IActionResult> ConfirmEmail(string token, string email)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user == null)
+        {
+            return BadRequest("Invalid email confirmation request.");
+        }
+
+        var result = await userManager.ConfirmEmailAsync(user, token);
+        if (result.Succeeded)
+        {
+            return Ok("Email confirmed successfully.");
+        }
+        else
+        {
+            return BadRequest("Email confirmation failed.");
         }
     }
 
@@ -100,6 +132,8 @@ public class AuthenticationController : ControllerBase
             return BadRequest("Could not renew token");
         }
     }
+
+    
 
     private async Task<string> SetupToken(string userEmail)
     {

@@ -23,7 +23,9 @@ builder.Services.AddRazorPages();
 builder.AddSwaggerServices();
 builder.AddAuthenticationServices();
 builder.AddApiVersioningServices();
+builder.AddDomainEventHandlers();
 builder.AddHealthChecks();
+builder.AddCustomIdentity();
 
 builder.Services.AddScoped<ITrekiService, TrekiService>();
 builder.Services.AddScoped<IPoiService, PoiService>();
