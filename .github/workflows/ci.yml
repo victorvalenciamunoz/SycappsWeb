@@ -30,7 +30,7 @@ jobs:
           ConnectionStrings__DefaultConnection: "Data Source=${{ secrets.DB_SERVER }};Initial Catalog=${{ secrets.DB_DATABASE_NAME }};Integrated Security=False;User Id=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_USERPASS }};MultipleActiveResultSets=True"
         run: |
           dotnet tool install --global dotnet-ef
-          dotnet ef migrations script --idempotent --output migration.sql --project ./Server/SycappsWeb.Server.csproj --startup-project ./Un2Trek.Treki.API/Un2Trek.Trekis.Api.csproj
+          dotnet ef migrations script --idempotent --output migration.sql --project ./Server/SycappsWeb.Server.csproj
 
       - name: Upload migration script
         uses: actions/upload-artifact@v4
