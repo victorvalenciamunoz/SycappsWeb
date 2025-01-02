@@ -1,5 +1,4 @@
 ﻿using SycappsWeb.Shared.Entities;
-using SycappsWeb.Shared.Models.Un2Trek;
 
 namespace SycappsWeb.Shared.Models;
 

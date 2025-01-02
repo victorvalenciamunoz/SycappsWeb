@@ -39,12 +39,5 @@ public class AuthService : IAuthService
     public async Task Logout()
     {
         await ((CustomStateProvider)authStateProvider).MarkUserAsLoggedOut();
-    }
-
-    public async Task Register(RegisterRequest registerRequest)
-    {
-        var result = await httpClient.PostAsJsonAsync("api/v1/authentication/register", registerRequest);
-        if (result.StatusCode == System.Net.HttpStatusCode.BadRequest) throw new Exception(await result.Content.ReadAsStringAsync());
-        result.EnsureSuccessStatusCode();
-    }
+    }   
 }

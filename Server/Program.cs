@@ -27,11 +27,10 @@ builder.AddDomainEventHandlers();
 builder.AddHealthChecks();
 builder.AddCustomIdentity();
 
-builder.Services.AddScoped<ITrekiService, TrekiService>();
+
 builder.Services.AddScoped<IPoiService, PoiService>();
 builder.Services.AddScoped<IContactMessageService, ContactMessageService>();
-builder.Services.AddScoped<IActividadService, ActividadService>();
-builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)

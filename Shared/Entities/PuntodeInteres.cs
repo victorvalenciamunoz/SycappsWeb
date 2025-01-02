@@ -1,6 +1,4 @@
-﻿using SycappsWeb.Shared.Entities.Un2Trek;
-using SycappsWeb.Shared.Models;
-using SycappsWeb.Shared.Models.Un2Trek;
+﻿using SycappsWeb.Shared.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace SycappsWeb.Shared.Entities;
