@@ -18,4 +18,7 @@ public class CaptureTrekiRequest
 
     [Required]
     public int ActivityId { get; set; }
+
+    [Required]
+    public string UserId { get; set; }
 }

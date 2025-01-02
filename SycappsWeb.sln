@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SycappsWeb.Client", "Client
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SycappsWeb.Shared", "Shared\SycappsWeb.Shared.csproj", "{4E382CF0-5CDF-471A-8C57-342EE60BA7AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SycappsWeb.Server.Tests", "SycappsWeb.Server.Tests\SycappsWeb.Server.Tests.csproj", "{127DA590-798C-4D2B-91A8-B5E7EB3263A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SycappsWeb.Server.Tests", "SycappsWeb.Server.Tests\SycappsWeb.Server.Tests.csproj", "{127DA590-798C-4D2B-91A8-B5E7EB3263A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

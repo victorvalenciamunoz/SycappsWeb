@@ -5,6 +5,7 @@ using Microsoft.Identity.Client;
 using Moq;
 using SycappsWeb.Server.Data;
 using SycappsWeb.Server.Services;
+using SycappsWeb.Shared.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,9 +28,9 @@ public class TrekiServiceTests :IClassFixture<TrekiServiceFixture>
     public async Task Capture_ShouldReturnError_WhenUserDoesNotExist()
     {
         Mock<IConfiguration> mockConfiguration = new Mock<IConfiguration>();
-        var mockUserManager = new Mock<UserManager<IdentityUser>>(Mock.Of<IUserStore<IdentityUser>>(), null, null, null, null, null, null, null, null);
+        var mockUserManager = new Mock<UserManager<ApplicationUser>>(Mock.Of<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
 
-        IdentityUser? user = null;
+        ApplicationUser? user = null;
         mockUserManager.Setup(service => service.FindByIdAsync(It.IsAny<string>())).ReturnsAsync(user);
 
         //Arrange

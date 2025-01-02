@@ -13,7 +13,7 @@ namespace SycappsWeb.Server.Controllers.v1;
 
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
-[Authorize]
+//[Authorize]
 public class Un2TrekTrekiController : ControllerBase
 {
     private readonly ITrekiService trekiService;
@@ -164,14 +164,16 @@ public class Un2TrekTrekiController : ControllerBase
 
         try
         {
-            var idUsuario = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            //var idUsuario = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var idUsuario= captureTreki.UserId.ToString();
             var result = await trekiService.Capture(captureTreki, idUsuario!);
             if (result.IsError)
             {
                 Log.Logger.Error("Error capturing treki {@captureTreki} {@result.Errors}", captureTreki, result.Errors);
                 return BadRequest(new ProblemDetails
                 {
-                    Detail = result.Errors.First().Description
+                    Detail = result.Errors.First().Description,
+                    Extensions = { { "Code", result.Errors.First().Code } }                    
                 });
             }
 

@@ -22,11 +22,11 @@ namespace SycappsWeb.Server.Controllers.v1;
 [AllowAnonymous]
 public class AuthenticationController : ControllerBase
 {
-    private readonly UserManager<IdentityUser> userManager;
+    private readonly UserManager<ApplicationUser> userManager;
     private readonly IConfiguration config;
     private readonly IEventService eventService;
 
-    public AuthenticationController(UserManager<IdentityUser> userManager,
+    public AuthenticationController(UserManager<ApplicationUser> userManager,
                                     IConfiguration config, IEventService eventService)
     {
         this.userManager = userManager;
@@ -152,7 +152,7 @@ public class AuthenticationController : ControllerBase
 
         return string.Empty;
     }
-    private async Task<Claim> GetFullNameClaim(IdentityUser identityUser)
+    private async Task<Claim> GetFullNameClaim(ApplicationUser identityUser)
     {
         var userClaims = await userManager.GetClaimsAsync(identityUser);
 
@@ -160,7 +160,7 @@ public class AuthenticationController : ControllerBase
 
         return fullNameClaim!;
     }
-    private string BuildToken(IdentityUser identityUser, List<string> userRoles, string fullUserName)
+    private string BuildToken(ApplicationUser identityUser, List<string> userRoles, string fullUserName)
     {
         var claims = new List<Claim>()
         {

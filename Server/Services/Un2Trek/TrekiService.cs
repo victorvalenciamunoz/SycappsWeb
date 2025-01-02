@@ -5,6 +5,7 @@ using SycappsWeb.Server.Data;
 using SycappsWeb.Server.ExtensionMethods;
 using SycappsWeb.Server.Models.IntegrationModels;
 using SycappsWeb.Server.Models.Un2Trek;
+using SycappsWeb.Shared.Entities;
 using SycappsWeb.Shared.Entities.Un2Trek;
 using SycappsWeb.Shared.ExtensionMethods;
 using SycappsWeb.Shared.Models.Un2Trek;
@@ -16,11 +17,11 @@ public class TrekiService : ITrekiService
 {    
     private readonly IUnitOfWork unitOfWork;
     private readonly IConfiguration config;
-    private readonly UserManager<IdentityUser> userManager;
+    private readonly UserManager<ApplicationUser> userManager;
 
     public TrekiService(IUnitOfWork unitOfWork,
                         IConfiguration configuration,
-                        UserManager<IdentityUser> userManager)
+                        UserManager<ApplicationUser> userManager)
     {        
         this.unitOfWork = unitOfWork;
         this.config = configuration;

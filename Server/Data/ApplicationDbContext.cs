@@ -23,5 +23,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         base.OnModelCreating(builder);
 
         // Configuraciones adicionales del modelo
+
+        builder.Entity<PuntodeInteres>()
+            .Property<byte[]>("RowVersion")
+            .IsRowVersion();
     }
 }
