@@ -1,0 +1,63 @@
+name: Sycapp.Web CI
+
+on:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+  build:
+    name: Syacapp.Web CI Job
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0
+
+      - name: dotnet test
+        run: dotnet test --configuration Release --no-build
+  
+      - name: dotnet publish
+        run: dotnet publish Client/SycappsWeb.Client.csproj --configuration Release -o artifacts
+  
+      - uses: actions/upload-artifact@v4
+        with:
+          name: treki.api-artifact
+          path: artifacts/
+      
+      - name: Generate EF migration script
+        env:
+          ConnectionStrings__DefaultConnection: "Data Source=${{ secrets.DB_SERVER }};Initial Catalog=${{ secrets.DB_DATABASE_NAME }};Integrated Security=False;User Id=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_USERPASS }};MultipleActiveResultSets=True"
+        run: |
+          dotnet tool install --global dotnet-ef
+          dotnet ef migrations script --idempotent --output migration.sql --project ./Server/SycappsWeb.Server.csproj --startup-project ./Un2Trek.Treki.API/Un2Trek.Trekis.Api.csproj
+
+      - name: Upload migration script
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-script
+          path: migration.sql
+
+      - name: Download migration script
+        uses: actions/download-artifact@v4
+        with:
+          name: migration-script
+          path: .
+
+      - name: Run EF Migrations
+        env:
+          SQLCMDUSER: ${{ secrets.DB_USERNAME }}
+          SQLCMDPASSWORD: ${{ secrets.DB_USERPASS }}
+        run: sqlcmd -S ${{ secrets.DB_SERVER }} -d ${{ secrets.DB_DATABASE_NAME }} -U ${{ env.SQLCMDUSER }} -P ${{ env.SQLCMDPASSWORD }} -i migration.sql
+
+      - name: Deploy to Simply        
+        uses: talunzhang/auto-web-deploy@v1.0.1
+        with:
+          website-name: ${{ secrets.SITE_NAME }} 
+          server-computer-name: ${{ secrets.SERVER_COMPUTER_NAME }}
+          server-username: ${{ secrets.SERVER_USER_NAME }}
+          server-password: ${{ secrets.SERVER_PASSWORD }}
+          source-path: artifacts/
