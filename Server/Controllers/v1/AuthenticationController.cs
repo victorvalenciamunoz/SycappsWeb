@@ -63,62 +63,6 @@ public class AuthenticationController : ControllerBase
         }
     }
 
-    [HttpPost("register")]
-    public async Task<ActionResult<string>> Post(RegisterRequest registerRequest)
-    {
-        if (!ModelState.IsValid)
-        {
-            foreach (var modelError in ModelState.Values)
-            {
-                Log.Logger.Error("Error validating user register data {@registerRequest} {@modelError.Errors}", registerRequest, modelError.Errors);
-            }
-            return BadRequest(new ValidationProblemDetails(ModelState));
-        }
-        var identityUser = new ApplicationUser
-        {
-            UserName = registerRequest.Email,
-            Email = registerRequest.Email,
-            EmailConfirmed = false,
-            ReceivePromotionalEmails = registerRequest.ReceivePromotionalEmails
-        };
-        var result = await userManager.CreateAsync(identityUser, registerRequest.Password);
-
-        if (result.Succeeded)
-        {
-            var token = await userManager.GenerateEmailConfirmationTokenAsync(identityUser);
-            var confirmationLink = Url.Action(nameof(ConfirmEmail), "Authentication", new { token, email = identityUser.Email }, Request.Scheme);
-
-            var domainEvent = new UserRegisteredEvent(identityUser.Email, $"{registerRequest.Name} {registerRequest.LastName}", confirmationLink);
-            await eventService.Publish(domainEvent);
-
-            return Ok("Registration successful. Please check your email to confirm your account.");
-        }
-        else
-        {
-            return BadRequest(result.Errors);
-        }
-    }
-
-    [HttpGet("confirmemail")]
-    public async Task<IActionResult> ConfirmEmail(string token, string email)
-    {
-        var user = await userManager.FindByEmailAsync(email);
-        if (user == null)
-        {
-            return BadRequest("Invalid email confirmation request.");
-        }
-
-        var result = await userManager.ConfirmEmailAsync(user, token);
-        if (result.Succeeded)
-        {
-            return Ok("Email confirmed successfully.");
-        }
-        else
-        {
-            return BadRequest("Email confirmation failed.");
-        }
-    }
-
     [HttpGet("renew")]
     public async Task<ActionResult<string>> Renew()
     {

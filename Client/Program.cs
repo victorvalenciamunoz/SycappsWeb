@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SycappsWeb.Client;
 using SycappsWeb.Client.Services;
-using SycappsWeb.Client.Services.Un2Trek;
 using Syncfusion.Blazor;
 
 
@@ -26,7 +25,7 @@ builder.Services.AddScoped(sp => new HttpClient
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPoiService, PoiService>();
 builder.Services.AddScoped<IContactMessageService, ContactMessageService>();
-builder.Services.AddScoped<IActividadService, ActividadService>();
+
 builder.Services.AddScoped<AuthenticationStateProvider, CustomStateProvider>();
 
 builder.Services.AddSyncfusionBlazor();

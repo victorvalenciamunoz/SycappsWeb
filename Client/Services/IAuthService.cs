@@ -5,6 +5,5 @@ namespace SycappsWeb.Client.Services;
 public interface IAuthService
 {
     Task<bool> Login(LoginRequest loginRequest);
-    Task Register(RegisterRequest registerRequest);
     Task Logout();
 }
